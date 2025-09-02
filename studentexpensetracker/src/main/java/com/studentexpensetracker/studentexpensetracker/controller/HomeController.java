@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/testapp")
+@RequestMapping("/status")
 public class HomeController {
     @GetMapping
-    public String testApp() {
+    public String testStatus() {
         return "Application is running!";
     }
 }
