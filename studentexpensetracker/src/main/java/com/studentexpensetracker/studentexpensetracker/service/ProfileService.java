@@ -1,13 +1,20 @@
 package com.studentexpensetracker.studentexpensetracker.service;
 
+import com.studentexpensetracker.studentexpensetracker.dto.AuthDTO;
 import com.studentexpensetracker.studentexpensetracker.dto.ProfileDTO;
 import com.studentexpensetracker.studentexpensetracker.entity.ProfileEntity;
 import com.studentexpensetracker.studentexpensetracker.repo.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -16,6 +23,7 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     public ProfileDTO registerProfile (ProfileDTO profileDTO) {
         // Convert DTO to Entity
@@ -69,5 +77,50 @@ public class ProfileService {
         profileEntity.setActive(true);
         profileRepository.save(profileEntity);
         return true;
+    }
+
+    public boolean isAccountActive (String email) {
+        ProfileEntity profileEntity = profileRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return profileEntity.isActive();
+    }
+
+    public ProfileEntity getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return profileRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + authentication.getName()));
+    }
+
+    public ProfileDTO getCurrentUserPublicProfile (String email) {
+        ProfileEntity currentUser;
+        if (email == null || email.isEmpty()) {
+            currentUser = getCurrentUser();
+        } else {
+            currentUser = profileRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        }
+        ProfileEntity profileEntity = ProfileEntity.builder()
+                .id(currentUser.getId())
+                .fullName(currentUser.getFullName())
+                .email(currentUser.getEmail())
+                .profileImageUrl(currentUser.getProfileImageUrl())
+                .createdAt(currentUser.getCreatedAt())
+                .updatedAt(currentUser.getUpdatedAt())
+                .build();
+        return toDTO(profileEntity);
+    }
+
+    public Map<String, Object> authenticateAndGenerateToken(AuthDTO authDTO) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authDTO.getEmail(), authDTO.getPassword()));
+
+            return Map.of(
+                    "token", "JWT token",
+                    "user", getCurrentUserPublicProfile(authDTO.getEmail())
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid email or password");
+        }
     }
 }
