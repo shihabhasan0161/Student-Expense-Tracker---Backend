@@ -4,6 +4,7 @@ import com.studentexpensetracker.studentexpensetracker.dto.AuthDTO;
 import com.studentexpensetracker.studentexpensetracker.dto.ProfileDTO;
 import com.studentexpensetracker.studentexpensetracker.entity.ProfileEntity;
 import com.studentexpensetracker.studentexpensetracker.repo.ProfileRepository;
+import com.studentexpensetracker.studentexpensetracker.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ public class ProfileService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     public ProfileDTO registerProfile (ProfileDTO profileDTO) {
         // Convert DTO to Entity
@@ -114,8 +116,9 @@ public class ProfileService {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authDTO.getEmail(), authDTO.getPassword()));
 
+            String token = jwtUtil.generateToken(authDTO.getEmail());
             return Map.of(
-                    "token", "JWT token",
+                    "token", token,
                     "user", getCurrentUserPublicProfile(authDTO.getEmail())
             );
 
