@@ -5,11 +5,10 @@ import com.studentexpensetracker.studentexpensetracker.entity.CategoryEntity;
 import com.studentexpensetracker.studentexpensetracker.entity.ProfileEntity;
 import com.studentexpensetracker.studentexpensetracker.repo.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,11 +20,38 @@ public class CategoryService {
     public CategoryDTO saveCategory(CategoryDTO categoryDTO) {
         ProfileEntity profileEntity = profileService.getCurrentUser();
         if (categoryRepository.existsByNameAndProfileId(categoryDTO.getName(), profileEntity.getId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category with this name already exists");
+            throw new RuntimeException("Category with this name already exists");
         }
         CategoryEntity newCategory = toEntity(categoryDTO, profileEntity);
         newCategory = categoryRepository.save(newCategory);
         return toDTO(newCategory);
+    }
+
+    //get categories by id
+    public List<CategoryDTO> getCategoriesForCurrentUser() {
+        ProfileEntity profileEntity = profileService.getCurrentUser();
+        List<CategoryEntity> categories = categoryRepository.findByProfileId(profileEntity.getId());
+        return categories.stream().map(this::toDTO).toList();
+    }
+
+    //get categories by type
+    public List<CategoryDTO> getCategoriesByType(String type) {
+        ProfileEntity profileEntity = profileService.getCurrentUser();
+        List<CategoryEntity> categories = categoryRepository.findByTypeAndProfileId(type, profileEntity.getId());
+        return categories.stream().map(this::toDTO).toList();
+    }
+
+    //update category by category id
+    public CategoryDTO updateCategory(String categoryId, CategoryDTO categoryDTO) {
+        ProfileEntity profileEntity = profileService.getCurrentUser();
+        CategoryEntity existingCategory = categoryRepository.findByIdAndProfileId(categoryId, profileEntity.getId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        existingCategory.setName(categoryDTO.getName());
+        existingCategory.setIcon(categoryDTO.getIcon());
+        existingCategory.setType(categoryDTO.getType());
+        existingCategory.setUpdatedAt(LocalDateTime.now());
+        existingCategory = categoryRepository.save(existingCategory);
+        return toDTO(existingCategory);
     }
 
     private CategoryEntity toEntity(CategoryDTO categoryDTO, ProfileEntity profileEntity) {
