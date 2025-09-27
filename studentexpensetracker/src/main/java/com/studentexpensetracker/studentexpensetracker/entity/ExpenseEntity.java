@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 public class ExpenseEntity {
     private String id;
     private String name;
+    private String icon;
     private LocalDate date;
     private double amount;
     @CreatedDate

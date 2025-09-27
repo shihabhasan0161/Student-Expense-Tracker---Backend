@@ -1,4 +1,4 @@
-package com.studentexpensetracker.studentexpensetracker.entity;
+package com.studentexpensetracker.studentexpensetracker.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,19 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-@Document(collection = "incomes")
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@EnableMongoAuditing
-public class IncomeEntity {
+public class ExpenseDTO {
     private String id;
     private String name;
     private String icon;
@@ -28,6 +24,6 @@ public class IncomeEntity {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
+    private String categoryName;
     private String categoryId;
-    private String profileId;
 }
