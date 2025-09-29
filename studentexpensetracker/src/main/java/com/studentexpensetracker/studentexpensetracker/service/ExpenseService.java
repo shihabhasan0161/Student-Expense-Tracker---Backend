@@ -50,6 +50,19 @@ public class ExpenseService {
         expenseRepository.delete(existingExpense);
     }
 
+    //Get latest 5 expenses for current user
+    public List<ExpenseDTO> get5LatestExpenses() {
+        ProfileEntity currentProfile = profileService.getCurrentUser();
+        List<ExpenseEntity> expenses = expenseRepository.findTop5ByOrderByDateDesc(currentProfile.getId());
+        return expenses.stream().map(this::toDTO).toList();
+    }
+
+    //Get total expense amount for current user
+    public Double getTotalExpenseAmount() {
+        ProfileEntity currentProfile = profileService.getCurrentUser();
+        return expenseRepository.findTotalExpenseBYProfileId(currentProfile.getId()).orElse(0.0);
+    }
+
     private ExpenseEntity toEntity(ExpenseDTO dto, ProfileEntity profile, CategoryEntity category) {
         return ExpenseEntity.builder()
                 .name(dto.getName())

@@ -13,7 +13,7 @@ public interface IncomeRepository extends MongoRepository<IncomeEntity, String> 
     List<IncomeEntity> findByProfileIdOrderByDateDesc(String profileId);
     List<IncomeEntity> findTop5ByOrderByDateDesc(String profileId);
     @Query(value = "{ 'profileId' : ?0 }", fields = "{ 'amount' : 1, '_id' : 0 }")
-    Optional<Double> findTotalExpenseBYProfileId(String profileId);
+    Optional<Double> findTotalIncomeBYProfileId(String profileId);
     List<IncomeEntity> findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(
             String profileId,
             LocalDate startDate,

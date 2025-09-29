@@ -52,6 +52,19 @@ public class IncomeService {
         incomeRepository.delete(existingIncome);
     }
 
+    //Get latest 5 incomes for current user
+    public List<IncomeDTO> get5LatestIncomes() {
+        ProfileEntity currentProfile = profileService.getCurrentUser();
+        List<IncomeEntity> incomes = incomeRepository.findTop5ByOrderByDateDesc(currentProfile.getId());
+        return incomes.stream().map(this::toDTO).toList();
+    }
+
+    //Get total income amount for current user
+    public Double getTotalIncomeAmount() {
+        ProfileEntity currentProfile = profileService.getCurrentUser();
+        return incomeRepository.findTotalIncomeBYProfileId(currentProfile.getId()).orElse(0.0);
+    }
+
     private IncomeEntity toEntity(IncomeDTO dto, ProfileEntity profile, CategoryEntity category) {
         return IncomeEntity.builder()
                 .name(dto.getName())
