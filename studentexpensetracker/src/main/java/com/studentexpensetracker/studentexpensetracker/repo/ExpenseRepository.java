@@ -2,6 +2,7 @@ package com.studentexpensetracker.studentexpensetracker.repo;
 
 import com.studentexpensetracker.studentexpensetracker.entity.ExpenseEntity;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -12,8 +13,14 @@ import java.util.Optional;
 public interface ExpenseRepository extends MongoRepository<ExpenseEntity, String> {
     List<ExpenseEntity> findByProfileIdOrderByDateDesc(String profileId);
     List<ExpenseEntity> findTop5ByOrderByDateDesc(String profileId);
-    @Query(value = "{ 'profileId' : ?0 }", fields = "{ 'amount' : 1, '_id' : 0 }")
-    Optional<Double> findTotalExpenseBYProfileId(String profileId);
+    @Aggregation(pipeline = {
+            "{ $match: { profileId: ?0 } }",
+            "{ $group: { _id: null, total: { $sum: \"$amount\" } } }"
+    })
+    ExpenseRepository.AmountTotal findTotalExpenseBYProfileId(String profileId);
+    interface AmountTotal {
+        Double getTotal();
+    }
     List<ExpenseEntity> findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(
             String profileId,
             LocalDate startDate,

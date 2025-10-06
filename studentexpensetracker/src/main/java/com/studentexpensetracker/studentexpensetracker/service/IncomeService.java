@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,8 +62,11 @@ public class IncomeService {
 
     //Get total income amount for current user
     public Double getTotalIncomeAmount() {
-        ProfileEntity currentProfile = profileService.getCurrentUser();
-        return incomeRepository.findTotalIncomeBYProfileId(currentProfile.getId()).orElse(0.0);
+        ProfileEntity profile = profileService.getCurrentUser();
+        return Optional
+                .ofNullable(incomeRepository.findTotalIncomeBYProfileId(profile.getId()))
+                .map(IncomeRepository.AmountTotal::getTotal)
+                .orElse(0.0);
     }
 
     private IncomeEntity toEntity(IncomeDTO dto, ProfileEntity profile, CategoryEntity category) {

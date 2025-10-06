@@ -6,12 +6,14 @@ import com.studentexpensetracker.studentexpensetracker.entity.ExpenseEntity;
 import com.studentexpensetracker.studentexpensetracker.entity.ProfileEntity;
 import com.studentexpensetracker.studentexpensetracker.repo.CategoryRepository;
 import com.studentexpensetracker.studentexpensetracker.repo.ExpenseRepository;
+import com.studentexpensetracker.studentexpensetracker.repo.IncomeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,8 +61,11 @@ public class ExpenseService {
 
     //Get total expense amount for current user
     public Double getTotalExpenseAmount() {
-        ProfileEntity currentProfile = profileService.getCurrentUser();
-        return expenseRepository.findTotalExpenseBYProfileId(currentProfile.getId()).orElse(0.0);
+        ProfileEntity profile = profileService.getCurrentUser();
+        return Optional
+                .ofNullable(expenseRepository.findTotalExpenseBYProfileId(profile.getId()))
+                .map(ExpenseRepository.AmountTotal::getTotal)
+                .orElse(0.0);
     }
 
     private ExpenseEntity toEntity(ExpenseDTO dto, ProfileEntity profile, CategoryEntity category) {
