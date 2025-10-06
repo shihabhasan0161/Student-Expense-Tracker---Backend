@@ -8,12 +8,14 @@ import com.studentexpensetracker.studentexpensetracker.repo.CategoryRepository;
 import com.studentexpensetracker.studentexpensetracker.repo.ExpenseRepository;
 import com.studentexpensetracker.studentexpensetracker.repo.IncomeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +57,7 @@ public class ExpenseService {
     //Get latest 5 expenses for current user
     public List<ExpenseDTO> get5LatestExpenses() {
         ProfileEntity currentProfile = profileService.getCurrentUser();
-        List<ExpenseEntity> expenses = expenseRepository.findTop5ByOrderByDateDesc(currentProfile.getId());
+        List<ExpenseEntity> expenses = expenseRepository.findTop5ByProfileIdOrderByDateDesc(currentProfile.getId());
         return expenses.stream().map(this::toDTO).toList();
     }
 
@@ -66,6 +68,18 @@ public class ExpenseService {
                 .ofNullable(expenseRepository.findTotalExpenseBYProfileId(profile.getId()))
                 .map(ExpenseRepository.AmountTotal::getTotal)
                 .orElse(0.0);
+    }
+
+    //filter expenses by date and keyword
+    public List<ExpenseDTO> filterExpenses(LocalDate startDate, LocalDate endDate, String keyword, Sort sort){
+        ProfileEntity profile = profileService.getCurrentUser();
+        String regex = (keyword == null || keyword.isBlank())
+                ? ".*"
+                : ".*" + Pattern.quote(keyword) + ".*";
+
+        List<ExpenseEntity> expenses = expenseRepository
+                .findByProfileIdAndDateBetweenAndNameRegex(profile.getId(), startDate, endDate, regex, sort);
+        return expenses.stream().map(this::toDTO).toList();
     }
 
     private ExpenseEntity toEntity(ExpenseDTO dto, ProfileEntity profile, CategoryEntity category) {
