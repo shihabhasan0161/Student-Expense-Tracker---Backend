@@ -82,6 +82,12 @@ public class ExpenseService {
         return expenses.stream().map(this::toDTO).toList();
     }
 
+    //Notifications for user to remind daily expenses
+    public List<ExpenseDTO> getExpenseForUserOnDate(String profileId, LocalDate date) {
+        List<ExpenseEntity> expenses = expenseRepository.findByProfileIdAndDate(profileId, date);
+        return expenses.stream().map(this::toDTO).toList();
+    }
+
     private ExpenseEntity toEntity(ExpenseDTO dto, ProfileEntity profile, CategoryEntity category) {
         return ExpenseEntity.builder()
                 .name(dto.getName())

@@ -42,4 +42,7 @@ public interface ExpenseRepository extends MongoRepository<ExpenseEntity, String
             LocalDate startDate,
             LocalDate endDate
     );
+
+
+    List<ExpenseEntity> findByProfileIdAndDate (String profileId, LocalDate date);
 }
