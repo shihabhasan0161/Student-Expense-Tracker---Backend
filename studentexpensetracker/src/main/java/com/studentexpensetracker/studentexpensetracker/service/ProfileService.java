@@ -6,6 +6,7 @@ import com.studentexpensetracker.studentexpensetracker.entity.ProfileEntity;
 import com.studentexpensetracker.studentexpensetracker.repo.ProfileRepository;
 import com.studentexpensetracker.studentexpensetracker.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,8 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    @Value("${sbt.backend.url}")
+    private String backendUrl;
 
     public ProfileDTO registerProfile (ProfileDTO profileDTO) {
         // Convert DTO to Entity
@@ -36,7 +39,7 @@ public class ProfileService {
 
         // Send activation email
 
-        String activationLink = "http://localhost:8080/api/v1/activate?token=" + profileEntity.getActivationToken();
+        String activationLink = backendUrl + "/api/v1/activate?token=" + profileEntity.getActivationToken();
         String subject = "Activate your Student Expense Tracker Account";
         String body = "Dear " + profileEntity.getFullName() + ",\n\n"
                 + "Thank you for registering with Student Expense Tracker. Please click the link below to activate your account:\n"
